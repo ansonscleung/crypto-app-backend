@@ -32,14 +32,15 @@ app.get("/api/quotes", (req: Request, res: Response) => {
   )
     .then((response) => response.json())
     .then((data) => {
+      //Assuming API returns >1 results
       const {
         symbol,
         last_updated,
         quote: {
-          USD: { price },
+          USD: { price, volume_24h: volume, percent_change_1h: change },
         },
       } = data.data.BTC[0];
-      res.json({ [symbol]: price, last_updated });
+      res.json({ [symbol]: { price, volume, change }, last_updated });
     })
     .catch((error) => console.error("Error:", error));
 });
