@@ -15,10 +15,10 @@ const PORT = process.env.PORT || 5000;
 const COINMARKETCAP_API_DOMAIN = process.env.COINMARKETCAP_API_DOMAIN as string;
 const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY as string;
 
-// demo API call with BTC-USD pair
+// demo API call with BTC/ETH/LTC-USD pairs
 app.get("/api/quotes", (req: Request, res: Response) => {
   fetch(
-    `${COINMARKETCAP_API_DOMAIN}/v2/cryptocurrency/quotes/latest?symbol=BTC&convert=USD`,
+    `${COINMARKETCAP_API_DOMAIN}/v2/cryptocurrency/quotes/latest?symbol=btc,eth,ltc&convert=USD`,
     {
       headers: {
         "Access-Control-Allow-Origin": "*",
@@ -31,16 +31,21 @@ app.get("/api/quotes", (req: Request, res: Response) => {
     }
   )
     .then((response) => response.json())
-    .then((data) => {
+    //TODO: types for CoinMarketCap API results
+    .then(({ data }: { data: { [key: string]: any } }) => {
       //Assuming API returns >1 results
-      const {
-        symbol,
-        last_updated,
-        quote: {
-          USD: { price, volume_24h: volume, percent_change_1h: change },
-        },
-      } = data.data.BTC[0];
-      res.json({ [symbol]: { price, volume, change }, last_updated });
+      let result = Object.values(data).map((c) => {
+        const {
+          symbol,
+          name,
+          last_updated,
+          quote: {
+            USD: { price, volume_24h: volume, percent_change_1h: change },
+          },
+        } = c[0];
+        return { symbol, name, price, volume, change, last_updated };
+      });
+      res.json(result);
     })
     .catch((error) => console.error("Error:", error));
 });
