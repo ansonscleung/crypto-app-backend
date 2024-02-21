@@ -1,4 +1,4 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, it, afterEach } from "@jest/globals";
 import request from "supertest";
 import server from "../index";
 
