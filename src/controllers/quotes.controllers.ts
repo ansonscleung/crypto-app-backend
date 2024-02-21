@@ -16,7 +16,10 @@ const coinMarketCapOptions = {
   },
 };
 
-const getQuote = async (symbols: Array<String>, fiats: Array<String>) => {
+export const getQuote = async (
+  symbols: Array<String>,
+  fiats: Array<String>
+) => {
   const symbolsString = symbols.join(",");
   const fiatsString = fiats.join(",");
   return (
