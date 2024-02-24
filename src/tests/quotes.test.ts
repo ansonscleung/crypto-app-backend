@@ -1,11 +1,15 @@
 import { jest, describe, expect, it, afterEach } from "@jest/globals";
 import request from "supertest";
 import server from "../index";
-import { getQuote } from "../controllers/quotes.controllers";
+import { getQuote, quotesController } from "../controllers/quotes.controllers";
+import { createRequest, createResponse} from "node-mocks-http"
 
 require("dotenv").config();
 
+const unmockedFetch = global.fetch
+
 afterEach(async () => {
+  global.fetch = unmockedFetch
   await server.close();
 });
 
@@ -58,9 +62,6 @@ const MOCK_RES = {
 
 describe("GET /api/quotes", () => {
   it("should return all quotes", () => {
-    global.fetch = jest.fn(() =>
-      Promise.resolve(new Response(JSON.stringify(MOCK_RES)))
-    );
     return request(server)
       .get("/api/quotes")
       .then((res) => {
@@ -68,7 +69,23 @@ describe("GET /api/quotes", () => {
         expect(res.body.length).toBeGreaterThan(0);
       });
   });
+  it("should cache response", async () => {
+    let res1 = await request(server)
+      .get("/api/quotes")
+    let res2 = await request(server)
+      .get("/api/quotes")
+    return expect(res2.body).toMatchObject(res1.body)
+  })
 });
+
+describe("quotesController", () => {
+  it("should return 9 quotes", async () => {
+    let req = createRequest()
+    let res = createResponse()
+    await quotesController(req, res)
+    return expect(res._getJSONData()).toHaveLength(9);
+  })
+})
 
 describe("getQuote", () => {
   it("should return all quotes", () => {
